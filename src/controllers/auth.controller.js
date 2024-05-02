@@ -36,13 +36,14 @@ export const register = async (req, res, next) => {
 
     res.json({
       message: "register success ",
-      access_token,
+
       user: {
         _id: newUser._id,
         name: newUser.name,
         email: newUser.email,
         picture: newUser.picture,
         status: newUser.status,
+        token: access_token,
       },
     });
   } catch (error) {

@@ -5,50 +5,53 @@ import mongoose from "mongoose";
 //env variables
 const PORT = process.env.PORT || 8000;
 const urlDb = process.env.DATABASE_URL;
-
-//exit on mongodb errors
+//exit on mognodb error
 mongoose.connection.on("error", (err) => {
-  logger.error("error connecting to mongodb", err);
+  logger.error(`Mongodb connection error : ${err}`);
   process.exit(1);
 });
 
 //mongodb debug mode
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV !== "production") {
   mongoose.set("debug", true);
 }
 
 //mongodb connection
-mongoose.connect(urlDb, {}).then(() => logger.info("connected to Mongodb"));
-
+mongoose
+  .connect(urlDb, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    logger.info("Connected to Mongodb.");
+  });
 let server;
+
 server = app.listen(PORT, () => {
-  //console.log(`server is running on http://localhost:${PORT}...`);
-  logger.info(`server is running on http://localhost:${PORT}...`);
+  logger.info(`Server is listening at http://localhost:${PORT}.`);
 });
 
+//handle server errors
 const exitHandler = () => {
   if (server) {
-    logger.info("Server closed");
+    logger.info("Server closed.");
     process.exit(1);
   } else {
     process.exit(1);
   }
 };
 
-// handle server errors
-const unexpectedErrorHandler = (err) => {
-  logger.error(err);
+const unexpectedErrorHandler = (error) => {
+  logger.error(error);
   exitHandler();
 };
-
 process.on("uncaughtException", unexpectedErrorHandler);
 process.on("unhandledRejection", unexpectedErrorHandler);
 
 //SIGTERM
-
 process.on("SIGTERM", () => {
   if (server) {
-    logger.info("Server closed");
+    logger.info("Server closed.");
     process.exit(1);
   }
 });
